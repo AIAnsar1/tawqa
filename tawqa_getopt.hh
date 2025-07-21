@@ -1,100 +1,77 @@
 #pragma once
 
+#ifndef TAWQA_GETOPT_HH_INCLUDED
+#define TAWQA_GETOPT_HH_INCLUDED
 
-#ifndef AAD110AE_B4A2_4565_8339_376247633893
+// TAWQA GetOpt Header
+// Modern C++23 port of getopt functionality
+// Using TAWQA prefix to avoid naming conflicts
 
 #include <string_view>
+#include <span>
+#include <optional>
 
-#define AAD110AE_B4A2_4565_8339_376247633893
+// Modern C++23 getopt implementation
+namespace tawqa {
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
-
-
-extern char *optarg;
-extern int optind;
-extern int opterr;
-extern int optopt;
-
-struct option
-{
-#if defined (__STDC__) && __STDC__
-  const char *name;
-#else
-  char *name;
-#endif
-  int has_arg;
-  int *flag;
-  int val;
+struct Option {
+    std::string_view name;
+    bool has_arg;
+    int* flag;
+    int val;
 };
 
+enum class ArgumentType {
+    NO_ARGUMENT = 0,
+    REQUIRED_ARGUMENT = 1,
+    OPTIONAL_ARGUMENT = 2
+};
 
-#define	no_argument		0
-#define required_argument	1
-#define optional_argument	2
+class GetOpt {
+public:
+    // Global state variables (for compatibility)
+    static inline char* optarg = nullptr;
+    static inline int optind = 1;
+    static inline int opterr = 1;
+    static inline int optopt = '?';
 
-#if defined (__STDC__) && __STDC__
-#ifdef __GNU_LIBRARY__
+    // Main getopt function
+    static int getopt(int argc, char* const argv[], std::string_view optstring);
+    
+    // Long option support
+    static int getopt_long(int argc, char* const argv[], 
+                          std::string_view optstring,
+                          std::span<const Option> longopts, 
+                          int* longindex = nullptr);
 
-extern int getopt (int argc, char *const *argv, const char *shortopts);
-#else /* not __GNU_LIBRARY__ */
-extern int getopt ();
-#endif /* __GNU_LIBRARY__ */
-extern int getopt_long (int argc, char *const *argv, const char *shortopts,const struct option *longopts, int *longind);
-extern int getopt_long_only (int argc, char *const *argv,const char *shortopts,const struct option *longopts, int *longind);
-extern int _getopt_internal (int argc, char *const *argv,const char *shortopts,const struct option *longopts, int *longind,int long_only);
-#else /* not __STDC__ */
-extern int getopt ();
-extern int getopt_long ();
-extern int getopt_long_only ();
-extern int _getopt_internal ();
-#endif /* __STDC__ */
-#ifdef	__cplusplus
+private:
+    static inline std::string_view nextchar;
+    static inline int first_nonopt = 1;
+    static inline int last_nonopt = 1;
+    
+    enum class Ordering {
+        REQUIRE_ORDER,
+        PERMUTE,
+        RETURN_IN_ORDER
+    };
+    
+    static inline Ordering ordering = Ordering::PERMUTE;
+    
+    static std::string_view initialize_getopt(std::string_view optstring);
+    static void exchange_args(char** argv);
+    static std::optional<char> find_char_in_string(std::string_view str, char c);
+};
 
+} // namespace tawqa
+
+// C-style interface for compatibility
+extern "C" {
+    extern char* optarg;
+    extern int optind;
+    extern int opterr;
+    extern int optopt;
+    
+    int tawqa_getopt(int argc, char* const argv[], const char* optstring);
 }
-#endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif /* AAD110AE_B4A2_4565_8339_376247633893 */
+#endif // TAWQA_GETOPT_HH_INCLUDED
