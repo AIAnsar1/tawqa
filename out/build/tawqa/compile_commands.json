@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/corevoid/Desktop/projects/tawqa/out/build/tawqa",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.7 -o CMakeFiles/tawqa.dir/main.cpp.o -c /Users/corevoid/Desktop/projects/tawqa/main.cpp",
+  "file": "/Users/corevoid/Desktop/projects/tawqa/main.cpp",
+  "output": "CMakeFiles/tawqa.dir/main.cpp.o"
+}
+]
