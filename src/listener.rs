@@ -130,7 +130,7 @@ pub fn listen(opts: &Opts) -> rustyline::Result<()> {
 
             #[cfg(unix)]
             {
-                termios_handler::setup_fd()?;
+                crate::termios::setup_fd()?;
                 listen_tcp_normal(stream, opts)?;
             }
         }

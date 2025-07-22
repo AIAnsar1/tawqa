@@ -109,12 +109,12 @@ fn main() {
             };
 
             #[cfg(unix)]
-            if let Err(err) = unixshell::shell(host, port, shell) {
+            if let Err(err) = unix::shell(host, port, shell) {
                 log::error!("{}", err);
             }
 
             #[cfg(windows)]
-            if let Err(err) = winshell::shell(host, port, shell) {
+            if let Err(err) = shell::shell(host, port, shell) {
                 log::error!("{}", err);
             }
 
@@ -130,7 +130,7 @@ fn main() {
 mod tests {
 
     #[cfg(unix)]
-    use super::unixshell;
+    use super::unix;
 
     use std::io::ErrorKind;
 
@@ -139,7 +139,7 @@ mod tests {
     #[cfg(unix)]
     fn revshell_bad_port() {
         assert_eq!(
-            unixshell::shell(
+            unix::shell(
                 "0.0.0.0".to_string(),
                 "420692223".to_string(),
                 "bash".to_string()

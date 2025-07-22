@@ -1,0 +1,110 @@
+# TAWQA Unified Build System
+# Builds both C++ and Rust versions with interoperability
+
+# Compiler settings
+CXX = g++
+CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic -O2 -g -pthread
+LDFLAGS = -pthread
+
+# Rust settings
+CARGO = cargo
+RUST_TARGET_DIR = target/release
+RUST_BINARY = $(RUST_TARGET_DIR)/tawqa
+
+# C++ source files
+CPP_SOURCES = tawqa.cc tawqa_getopt.cc tawqa_doexec.cc
+CPP_OBJECTS = $(CPP_SOURCES:.cc=.o)
+CPP_TARGET = tawqa_cpp
+
+# Remove C++20 extended version (src_cpp removed)
+
+# Hybrid version (C++ with Rust backend)
+HYBRID_SOURCES = tawqa_hybrid.cc tawqa_getopt.cc
+HYBRID_OBJECTS = $(HYBRID_SOURCES:.cc=.o)
+HYBRID_TARGET = tawqa_hybrid
+
+# Default target - build all versions
+.PHONY: all clean install help rust cpp hybrid test
+
+all: rust cpp hybrid
+	@echo "All versions built successfully!"
+	@echo "Available executables:"
+	@echo "  - $(RUST_BINARY) (Rust version)"
+	@echo "  - $(CPP_TARGET) (C++ classic version)"
+	@echo "  - $(HYBRID_TARGET) (C++ with Rust backend)"
+
+# Build Rust version
+rust:
+	@echo "Building Rust version..."
+	$(CARGO) build --release
+	@echo "Rust version built: $(RUST_BINARY)"
+
+# Build C++ classic version
+cpp: $(CPP_TARGET)
+
+$(CPP_TARGET): $(CPP_OBJECTS)
+	$(CXX) $(CPP_OBJECTS) -o $@ $(LDFLAGS)
+
+
+
+# Build hybrid version (C++ frontend with Rust backend)
+hybrid: rust $(HYBRID_TARGET)
+
+$(HYBRID_TARGET): $(HYBRID_OBJECTS)
+	$(CXX) $(HYBRID_OBJECTS) -o $@ $(LDFLAGS)
+
+# Compile C++ source files
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+
+
+# Dependencies
+tawqa.o: tawqa.cc tawqa_generic.hh tawqa_getopt.hh
+tawqa_getopt.o: tawqa_getopt.cc tawqa_getopt.hh tawqa_generic.hh
+tawqa_doexec.o: tawqa_doexec.cc tawqa_generic.hh
+tawqa_hybrid.o: tawqa_hybrid.cc tawqa_generic.hh tawqa_getopt.hh
+
+# Test all versions
+test: all
+	@echo "Testing Rust version..."
+	@$(RUST_BINARY) --help > /dev/null && echo "✓ Rust version works" || echo "✗ Rust version failed"
+	@echo "Testing C++ classic version..."
+	@./$(CPP_TARGET) -h > /dev/null && echo "✓ C++ classic version works" || echo "✗ C++ classic version failed"
+	@echo "Testing hybrid version..."
+	@./$(HYBRID_TARGET) -h > /dev/null && echo "✓ Hybrid version works" || echo "✗ Hybrid version failed"
+
+# Clean all build artifacts
+clean:
+	rm -f $(CPP_OBJECTS) $(CPP_TARGET)
+	rm -f $(HYBRID_OBJECTS) $(HYBRID_TARGET)
+	$(CARGO) clean
+	@echo "All build artifacts cleaned"
+
+# Install all versions
+install: all
+	@echo "Installing all versions to /usr/local/bin..."
+	cp $(RUST_BINARY) /usr/local/bin/tawqa-rust
+	cp $(CPP_TARGET) /usr/local/bin/tawqa-cpp
+	cp $(HYBRID_TARGET) /usr/local/bin/tawqa-hybrid
+	@echo "Installation complete!"
+
+# Help
+help:
+	@echo "TAWQA Unified Build System"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  all     - Build all versions (default)"
+	@echo "  rust    - Build Rust version only"
+	@echo "  cpp     - Build C++ classic version only"
+	@echo "  hybrid  - Build hybrid version (C++ with Rust backend)"
+	@echo "  test    - Test all built versions"
+	@echo "  clean   - Remove all build artifacts"
+	@echo "  install - Install all versions to /usr/local/bin"
+	@echo "  help    - Show this help message"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make all          # Build everything"
+	@echo "  make rust cpp     # Build only Rust and C++ versions"
+	@echo "  make clean all    # Clean and rebuild everything"
+	@echo "  make test         # Test all versions"

@@ -1,20 +1,49 @@
-cc=cl
-link=link
+# TAWQA Makefile
+# Modern C++23 build configuration
 
-cflags=/nologo /ML /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "TELNET" /D "GAPING_SECURITY_HOLE" /YX /FD /c 
-lflags=kernel32.lib user32.lib wsock32.lib winmm.lib /nologo /subsystem:console /incremental:yes /machine:I386 /out:nc.exe
+CXX = g++
+CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic -O2 -g
+LDFLAGS = 
 
-all: tawqa.exe
+# Source files
+SOURCES = tawqa.cc tawqa_getopt.cc tawqa_doexec.cc
+OBJECTS = $(SOURCES:.cc=.o)
+TARGET = tawqa
 
-getopt.obj: tawqa_getopt.cc
-    $(cc) $(cflags) tawqa_getopt.c
+# Default target
+.PHONY: all clean install help
 
-doexec.obj: tawqa_doexec.cc
-    $(cc) $(cflags) tawqa_doexec.cc
+all: $(TARGET)
 
-netcat.obj: tawqa.cc
-    $(cc) $(cflags) tawqa.cc
+# Build main executable
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
+# Compile source files
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-nc.exe: getopt.obj doexec.obj netcat.obj
-    $(link) getopt.obj doexec.obj netcat.obj $(lflags)
+# Dependencies
+tawqa.o: tawqa.cc tawqa_generic.hh tawqa_getopt.hh
+tawqa_getopt.o: tawqa_getopt.cc tawqa_getopt.hh tawqa_generic.hh
+tawqa_doexec.o: tawqa_doexec.cc tawqa_generic.hh
+
+# Clean build artifacts
+clean:
+	rm -f $(OBJECTS) $(TARGET)
+
+# Install (optional)
+install: $(TARGET)
+	cp $(TARGET) /usr/local/bin/
+
+# Help
+help:
+	@echo "TAWQA Build System"
+	@echo "Available targets:"
+	@echo "  all     - Build the main executable (default)"
+	@echo "  clean   - Remove build artifacts"
+	@echo "  install - Install to /usr/local/bin"
+	@echo "  help    - Show this help message"
+	@echo ""
+	@echo "Build with: make"
+	@echo "Clean with: make clean"

@@ -32,6 +32,9 @@
 #define TAWQA_HAVE_SYSMACROS_H
 #define TAWQA_HAVE_TTYENT_H
 
+// Security hole feature (disabled by default)
+// #define TAWQA_GAPING_SECURITY_HOLE
+
 // Platform-specific adjustments
 #ifdef __APPLE__
     // macOS specific settings
@@ -69,5 +72,14 @@ using tawqa_size_t = std::size_t;
 constexpr std::size_t TAWQA_BUFFER_SIZE = 8192;
 constexpr std::size_t TAWQA_SMALL_BUFFER_SIZE = 256;
 constexpr std::uint16_t TAWQA_DEFAULT_PORT = 31337;
+
+// Function declarations
+void tawqa_holler(const char* str, const char* p1 = nullptr, 
+                  const char* p2 = nullptr, const char* p3 = nullptr);
+void tawqa_bail(const char* str, const char* p1 = nullptr, 
+                const char* p2 = nullptr, const char* p3 = nullptr);
+bool tawqa_doexec(int client_socket);
+void tawqa_set_program_path(const char* path);
+void tawqa_doexec_cleanup();
 
 #endif // TAWQA_GENERIC_HH_INCLUDED
